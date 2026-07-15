@@ -1,14 +1,36 @@
 let audioCtx = null;
 
+// Initialize and unlock the audio context on the first user interaction 
+// to satisfy modern browser autoplay policies.
+const unlockAudioContext = () => {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+};
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('click', unlockAudioContext, { once: true });
+  window.addEventListener('touchstart', unlockAudioContext, { once: true });
+  window.addEventListener('keydown', unlockAudioContext, { once: true });
+}
+
 export const playBeep = () => {
-  // Create audio context only on user interaction (or when first needed)
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
 
-  // Resume context if suspended
+  // Attempt to resume. (May be ignored by the browser if no user gesture has occurred yet).
   if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
+    audioCtx.resume().catch(() => {});
+  }
+
+  // If the context is still suspended (user hasn't clicked anywhere yet), 
+  // abort playing the sound to prevent them from queuing up and blasting all at once later.
+  if (audioCtx.state === 'suspended') {
+    return;
   }
 
   const osc = audioCtx.createOscillator();
@@ -17,8 +39,8 @@ export const playBeep = () => {
   osc.connect(gainNode);
   gainNode.connect(audioCtx.destination);
 
-  osc.type = 'sine'; // A sine wave gives a clean, technical beep
-  osc.frequency.value = 800; // Frequency in Hz
+  osc.type = 'sine';
+  osc.frequency.value = 800;
 
   // Very quick, subtle volume envelope
   gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
