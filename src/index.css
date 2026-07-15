@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-main-bg: #0F1113;
+  --color-grid-stroke: #313334;
+  --color-grid-hover: #455283;
+  --font-sans: "Manrope", sans-serif;
+  --font-mono: "Geist Mono", monospace;
+  --color-text-main: #E2E8F0;
+  --color-text-muted: #94A3B8;
+}
+
+body {
+  background-color: var(--color-main-bg);
+  color: var(--color-text-main);
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
